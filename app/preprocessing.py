@@ -12,7 +12,6 @@ os.makedirs(MODELS_PATH, exist_ok=True)
 def load_and_clean(df):
     print("Step 1 — Fixing TotalCharges...")
     # TotalCharges is stored as text — convert to number
-    # errors='coerce' means: if it cant convert, put NaN instead of crashing
     df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
     
     # New customers have 0 tenure and empty TotalCharges — fill with 0
@@ -20,12 +19,10 @@ def load_and_clean(df):
     print(f"  TotalCharges nulls remaining: {df['TotalCharges'].isnull().sum()}")
     
     print("Step 2 — Dropping customerID...")
-    # customerID is just a unique ID — useless for prediction
     df = df.drop('customerID', axis=1)
     
     print("Step 3 — Encoding target column Churn...")
-    # Convert Yes/No to 1/0
-    # This is our target — what we want to predict
+   
     df['Churn'] = (df['Churn'] == 'Yes').astype(int)
     print(f"  Churn value counts: {df['Churn'].value_counts().to_dict()}")
     
@@ -33,8 +30,6 @@ def load_and_clean(df):
 
 def encode_categories(df):
     print("Step 4 — Encoding categorical columns...")
-    # LabelEncoder converts text categories to numbers
-    # Example: Month-to-month=0, One year=1, Two year=2
     
     cat_cols = df.select_dtypes(include='object').columns.tolist()
     print(f"  Columns to encode: {cat_cols}")
@@ -50,14 +45,12 @@ def engineer_features(df):
     print("Step 5 — Engineering new features...")
     
     # Feature 1: charges per month of tenure
-    # A customer paying $100/month for 1 month is different from
-    # one paying $100/month for 5 years — this ratio captures that
     df['charges_per_tenure'] = df['MonthlyCharges'] / (df['tenure'] + 1)
     print("  Created: charges_per_tenure")
     
     # Feature 2: is this a new customer?
-    # Our EDA showed new customers churn much more
-    # Customers with less than 6 months tenure = new customer
+    # EDA showed new customers churn much more
+
     df['is_new_customer'] = (df['tenure'] < 6).astype(int)
     print("  Created: is_new_customer")
     
@@ -76,14 +69,12 @@ def engineer_features(df):
 def split_and_scale(df):
     print("Step 6 — Splitting into train and test sets...")
     
-    X = df.drop('Churn', axis=1)  # everything except target
-    y = df['Churn']               # just the target
+    X = df.drop('Churn', axis=1)  
+    y = df['Churn']    
     
     print(f"  Features shape: {X.shape}")
     print(f"  Target shape: {y.shape}")
     
-    # stratify=y means keep same churn ratio in both train and test
-    # random_state=42 means results are reproducible every time
     X_train, X_test, y_train, y_test = train_test_split(
         X, y,
         test_size=0.2,
@@ -97,14 +88,11 @@ def split_and_scale(df):
     print(f"  Test churn rate:  {y_test.mean():.1%}")
     
     print("Step 7 — Scaling features...")
-    # StandardScaler makes all numbers have mean=0 and std=1
-    # Without this, tenure (0-72) dominates MonthlyCharges (18-118)
-    # The model would think tenure is more important just because its bigger
+
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)  # learn scale from train only
-    X_test  = scaler.transform(X_test)       # apply same scale to test
-    
-    # Save scaler — we need this exact same scaler in Streamlit later
+    X_train = scaler.fit_transform(X_train)  
+    X_test  = scaler.transform(X_test)  
+ 
     joblib.dump(scaler, 'app/models/scaler.pkl')
     print("  Scaler saved to app/models/scaler.pkl")
     
