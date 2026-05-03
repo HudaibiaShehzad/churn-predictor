@@ -79,11 +79,11 @@ def build_input(tenure, monthly_charges, contract,
 def main():
     st.set_page_config(
         page_title="Customer Churn Predictor",
-        page_icon="📊",
+        page_icon="",
         layout="wide"
     )
 
-    st.title("📊 Customer Churn Predictor")
+    st.title("Customer Churn Predictor")
     st.caption("Predict whether a customer is likely to leave — powered by Machine Learning")
     st.markdown("---")
 
