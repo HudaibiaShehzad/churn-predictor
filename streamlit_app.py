@@ -124,7 +124,7 @@ def main():
 
     st.markdown("---")
 
-    if st.button("🔮 Predict Churn Risk", use_container_width=True):
+    if st.button(" Predict Churn Risk", use_container_width=True):
         input_df = build_input(
             tenure, monthly_charges, contract, internet,
             senior, partner, dependents, phone, paperless,
